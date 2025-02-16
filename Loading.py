@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt  # Add this import
 from pydub import AudioSegment
 
 # File path for the original video
-original_video_path  = 'video_folder'
+original_video_path = '/home/ntu-user/PycharmProjects/Assesment/Video /COMP40731_video.mp4'
 
 # Directories to save frames and audio
 frames_dir = 'Frames'

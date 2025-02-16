@@ -1,14 +1,16 @@
 import cv2
 import matplotlib.pyplot as plt
+import nest
 import numpy as np
 import os
 import h5py
 from tqdm import tqdm
-import nest
+import json
+
 
 results_dir = "results/"
-rows=174#240
-cols=200#320
+rows=174
+cols=200
 
 # Function to convert pixel intensity to current for each color channel
 def pixel_intensity_to_current(intensity, offset=380):
@@ -22,10 +24,10 @@ def resize_image(image, target_size=(cols, rows)):
         return cv2.resize(image, target_size)
 
 # Function to simulate raster plot for each image
-def simulate_raster_plot(image_file, current_funcs, sim_time1=50.0, pd=13.0):
+def simulate_raster_plot(image_file, current_funcs, sim_time=50.0, pd=13.0):
     # Clear console
     os.system('clear')
-    sim_time1=sim_time1+pd
+    sim_time1=sim_time+pd
     # Read the image
     print("Reading image {}...".format(image_file))
     image = cv2.imread(os.path.join(images_folder, image_file + image_extension))
@@ -99,7 +101,7 @@ def simulate_raster_plot(image_file, current_funcs, sim_time1=50.0, pd=13.0):
             grp.create_dataset("times", data=times)
             grp.attrs["image_filename"] = image_file
             grp.attrs["image_dimensions"] = (height, width)
-            grp.attrs["simulation_time"] = sim_time1
+            grp.attrs["simulation_time"] = sim_time
 
     # Plot raster plot for each color channel
     plt.figure(figsize=(15, 5))
@@ -120,19 +122,24 @@ def simulate_raster_plot(image_file, current_funcs, sim_time1=50.0, pd=13.0):
         np.save(os.path.join(results_dir, image_file + "_"+ color + "_L3_ts.npy"), ts)
         plt.vlines(ts, senders, senders + 1, color=color.lower(), linewidths=0.5)
     plt.tight_layout()
-    # plt.show()
+    #plt.show()
 
- # List of image file names
-images_folder = 'Frames'  # Adjust this path to point to your Frames folder
+
+# List of image file names
+images_folder = 'Frames/'
 image_extension = '.jpg'
-target_size = (174, 200)  # Specify the target size for resizing images
-results_dir = "results"  # Specify the directory to save
-os.makedirs(results_dir, exist_ok=True)
+# Start and end frames
+start_frame = 1
+end_frame = 10
 
-# Get the list of all image files in the folder
-image_files = [file[:-len(image_extension)] for file in sorted(os.listdir(images_folder)) if
-                   file.endswith(image_extension)]
+#Load Json
+with open('json') as f:
+    params = json.load(f)
+    model = params['model']
 
-# Limit the loop to the first 20 frames
-for image_file in image_files[:2]:
+# List of image files within the range of start_frame and end_frame
+image_files = [f'frame{i:04d}' for i in range(start_frame, end_frame + 1)]
+
+# Simulate raster plot for each image
+for image_file in image_files:
     simulate_raster_plot(image_file, [pixel_intensity_to_current] * 3)
